@@ -17,7 +17,7 @@ const Loginsignup = () => {
       </p>
       <div className="loginsignup-agree">
         <input type="checkbox" name='' id='' />
-        <p>By continuoing , i agree to the terms & privacy policy.</p>
+        <p>By continuoing , i agree to the terms & privacy policy1.</p>
       </div>
     </div>
    </div>
