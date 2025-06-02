@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/Prasannaramesh13/online-shopping-app.git'
+                git branch: 'main', url: 'https://github.com/Prasannaramesh13/online-shopping-app.git'
             }
         }
 
