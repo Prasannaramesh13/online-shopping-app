@@ -7,7 +7,7 @@ pipeline {
     }
 
     stages {
-        stage('cloning the repo') {
+        stage('Cloning the Repo') {
             steps {
                 git branch: 'main', url: 'https://github.com/Prasannaramesh13/online-shopping-app.git'
             }
@@ -25,31 +25,31 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', username: 'DOCKER_USER', password: 'DOCKER_PASS')]) {
-                 {
                     script {
                         sh """
-                          echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                      """
-                       sh "docker push $DEV_IMAGE:$IMAGE_TAG"
+                            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                            docker push $DEV_IMAGE:$IMAGE_TAG
+                        """
                     }
                 }
             }
         }
-        stage('Pull Docker Image') {
+
+        stage('Pulling Docker Image') {
             steps {
-                sh '''
+                sh """
                     echo "Pulling Docker image..."
                     docker pull $DEV_IMAGE:$IMAGE_TAG
-                '''
+                """
             }
         }
 
-        stage('Run Container') {
+        stage('image to Container') {
             steps {
-                sh '''
+                sh """
                     echo "Running container..."
                     docker run -d --name shopping-app -p 3000:3000 $DEV_IMAGE:$IMAGE_TAG
-                '''
+                """
             }
         }
     }
@@ -60,4 +60,5 @@ pipeline {
         }
     }
 }
+
  
