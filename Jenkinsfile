@@ -7,7 +7,7 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
+        stage('cloning the repo') {
             steps {
                 git branch: 'main', url: 'https://github.com/Prasannaramesh13/online-shopping-app.git'
             }
@@ -25,27 +25,36 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-creds',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
+                    credentialsId: 'dockerhub-creds' )])
+                 {
                     script {
-                        sh """
-                            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                        """
                         sh "docker push $DEV_IMAGE:$IMAGE_TAG"
                     }
                 }
             }
         }
+        stage('Pull Docker Image') {
+            steps {
+                sh '''
+                    echo "Pulling Docker image..."
+                    docker pull $DEV_IMAGE:$IMAGE_TAG
+                '''
+            }
+        }
+
+        stage('Run Container') {
+            steps {
+                sh '''
+                    echo "Running container..."
+                    docker run -d --name shopping-app -p 3000:3000 $DEV_IMAGE:$IMAGE_TAG
+                '''
+            }
+        }
     }
 
     post {
-        success {
-            echo 'Image pushed successfully!'
-        }
-        failure {
-            echo 'Image push failed!'
+        always {
+            echo 'CI/CD pipeline finished.'
         }
     }
 }
