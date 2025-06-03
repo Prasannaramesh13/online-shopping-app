@@ -1,32 +1,46 @@
 pipeline {
     agent any
 
+    environment {
+    DEV_IMAGE = 'e-commerce:latest'
+  }
+
     stages {
         stage('Checkout') {
             steps {
                 git branch: 'main', url: 'https://github.com/Prasannaramesh13/online-shopping-app.git'
             }
         }
-
-        stage('Install Dependencies') {
-            steps {
-                sh 'npm install'
-            }
+     
+    stage('Build Docker Image') {
+        steps {
+          script {
+           sh 'chmod +x build.sh'
+           sh "./build.sh "
+          }
         }
-
-        stage('Build React App') {
-            steps {
-                sh 'npm run build'
-            }
-        }
-    }
-
+      }
+      
+    stage('Push to Docker Hub') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+          script {
+            sh """
+              echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+            """
+              sh "docker push $DEV_IMAGE"
+             }
+          }
+       }
+    }      
+   
     post {
         success {
-            echo 'Build and tests completed successfully!'
+            echo 'Image pushed successfully!'
         }
         failure {
-            echo 'Build or tests failed!'
-        }
-    }
-}
+            echo 'Imagge pushed failed!'
+         }
+      }
+   }
+}    
