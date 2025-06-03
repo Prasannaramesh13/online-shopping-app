@@ -24,7 +24,7 @@ pipeline {
 
         stage('Push to Docker Hub') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER1', passwordVariable: 'DOCKER_PASS1')]) {
                     script {
                         sh """
                             echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
@@ -48,6 +48,8 @@ pipeline {
             steps {
                 sh """
                     echo "Running container..."
+                    docker stop shopping-app || true
+                    docker rm -f shopping-app || true
                     docker run -d --name shopping-app -p 3000:3000 $DEV_IMAGE:$IMAGE_TAG
                 """
             }
