@@ -2,7 +2,8 @@ pipeline {
     agent any
 
     environment {
-        DEV_IMAGE = 'e-commerce:latest'
+        DEV_IMAGE = 'prasanna1808/e-commerce'
+        IMAGE_TAG = 'latest'
     }
 
     stages {
@@ -32,7 +33,7 @@ pipeline {
                         sh """
                             echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
                         """
-                        sh "docker push $DEV_IMAGE"
+                        sh "docker push $DEV_IMAGE:$IMAGE_TAG"
                     }
                 }
             }
