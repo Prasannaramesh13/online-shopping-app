@@ -7,9 +7,20 @@ pipeline {
     }
 
     stages {
+        stage('Clean Workspace') {
+            steps {
+                deleteDir() // Clean workspace before checkout
+            }
+        }
+
         stage('Cloning the Repo') {
             steps {
-                git branch: 'main', url: 'https://github.com/Prasannaramesh13/online-shopping-app.git'
+                checkout([$class: 'GitSCM',
+                    branches: [[name: '*/main']],
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/Prasannaramesh13/online-shopping-app.git'
+                    ]]
+                ])
             }
         }
 
@@ -24,7 +35,7 @@ pipeline {
 
         stage('Push to Docker Hub') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER1', passwordVariable: 'DOCKER_PASS1')]) {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     script {
                         sh """
                             echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
@@ -44,7 +55,7 @@ pipeline {
             }
         }
 
-        stage('image to Container') {
+        stage('Run Container') {
             steps {
                 sh """
                     echo "Running container..."
