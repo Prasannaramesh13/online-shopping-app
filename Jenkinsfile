@@ -59,9 +59,9 @@ pipeline {
             steps {
                 sh """
                     echo "Running container..."
-                    docker stop shopping-app || true
-                    docker rm -f shopping-app || true
-                    docker run -d --name shopping-app -p 3000:3000 $DEV_IMAGE:$IMAGE_TAG
+                    docker stop shoppingapp || true
+                    docker rm -f shoppingapp || true
+                    docker run -d --name shoppingapp --network react-net -p 3000:3000 $DEV_IMAGE:$IMAGE_TAG
                 """
             }
         }
