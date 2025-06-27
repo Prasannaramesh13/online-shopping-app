@@ -2,21 +2,24 @@ version: 2.1
 
 jobs:
   deploy:
-    machine: true  # Use a full VM instead of Docker
+    machine: true
     environment:
-      REPO_URL: https://github.com/Prasannaramesh13/online-shopping-app.git
       APP_DIR: online-shopping-app
     steps:
       - checkout
 
       - add_ssh_keys:
           fingerprints:
-            - "SHA256:nvBo8bI+QsWnA9X51EFwxDMrbLDhVU1qtSZGf7Cd9aE"  # Replace with your actual SSH key fingerprint
+            - "SHA256:nvBo8bI+QsWnA9X51EFwxDMrbLDhVU1qtSZGf7Cd9aE"
 
       - run:
           name: SSH into EC2 and deploy React app
           command: |
             ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST \<< 'EOF'
+              # Variables inside the EC2 instance
+              APP_DIR=online-shopping-app
+              REPO_URL=https://github.com/Prasannaramesh13/online-shopping-app.git
+
               # Install required tools
               sudo apt update
               sudo apt install -y git curl psmisc
@@ -29,23 +32,23 @@ jobs:
               cd /home/$EC2_USER
               rm -rf $APP_DIR
 
-              # Clone the latest code
+              # Clone repo
               git clone $REPO_URL
               cd $APP_DIR
 
-              # Install dependencies and build the app
+              # Install dependencies and build
               npm install
               npm run build
 
-              # Install serve if not present
+              # Install serve if missing
               if ! command -v serve > /dev/null; then
                 sudo npm install -g serve
               fi
 
-              # Kill existing app running on port 3000
+              # Kill any existing app on port 3000
               fuser -k 3000/tcp || true
 
-              # Serve the build directory on port 3000 (accessible via EC2_PUBLIC_IP:3000)
+              # Serve build directory
               nohup serve -s build -l tcp://0.0.0.0:3000 > /tmp/serve.log 2>&1 &
             EOF
 
@@ -54,6 +57,7 @@ workflows:
   deploy_workflow:
     jobs:
       - deploy
+
 
 
 
