@@ -17,9 +17,12 @@ jobs:
           name: Build and serve React app on EC2
           command: |
             ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST \<< 'EOF'
+              mkdir -p /home/$EC2_USER/$APP_DIR
               cd /home/$EC2_USER/$APP_DIR
               sudo apt update && sudo apt install git -y
               git clone https://github.com/Prasannaramesh13/online-shopping-app.git
+              curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+              sudo apt install -y nodejs
               # Install dependencies and build
               npm install
               npm run build
