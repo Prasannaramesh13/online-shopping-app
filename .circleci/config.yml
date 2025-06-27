@@ -16,27 +16,31 @@ jobs:
       - run:
           name: Build and serve React app on EC2
           command: |
-            ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST \<< 'EOF'
-              mkdir -p /home/$EC2_USER/$APP_DIR
-              cd /home/$EC2_USER/$APP_DIR
-              sudo apt update && sudo apt install git -y
-              git clone https://github.com/Prasannaramesh13/online-shopping-app.git
+            ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << 'EOF'
+              sudo apt update
+              sudo apt install -y git psmisc curl
+
+              cd /home/$EC2_USER
+              if [ -d "$APP_DIR/.git" ]; then
+                cd $APP_DIR && git pull
+              else
+                git clone https://github.com/Prasannaramesh13/online-shopping-app.git $APP_DIR
+                cd $APP_DIR
+              fi
+
               curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
               sudo apt install -y nodejs
-              # Install dependencies and build
+
               npm install
               npm run build
 
-              # Install serve globally if not already installed
               if ! command -v serve > /dev/null; then
                 npm install -g serve
               fi
 
-              # Kill old process running on port 3000
               fuser -k 3000/tcp || true
 
-              # Start serve in background
-              nohup serve -s build -l 3000 > serve.log 2>&1 &
+              nohup serve -s build -l tcp://0.0.0.0:3000 > /home/$EC2_USER/serve.log 2>&1 &
             EOF
 
 workflows:
@@ -44,3 +48,4 @@ workflows:
   deploy_workflow:
     jobs:
       - deploy
+
