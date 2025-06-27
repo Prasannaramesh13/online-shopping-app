@@ -27,7 +27,7 @@ jobs:
               sudo apt install -y nodejs
 
               # Go to home directory
-              cd /home/$USER
+              cd /home/$EC2_USER
 
               # Remove old repo if it exists (optional)
               rm -rf $APP_DIR
