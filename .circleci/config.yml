@@ -16,7 +16,7 @@ jobs:
       - run:
           name: Ensure rsync is installed and copy project to EC2
           command: |
-            ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << 'EOF'
+            ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST \<< 'EOF'
               if ! command -v rsync > /dev/null; then
                 if command -v apt > /dev/null; then
                   sudo apt update && sudo apt install rsync -y
@@ -31,7 +31,7 @@ jobs:
       - run:
           name: Build and serve React app on EC2
           command: |
-            ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << 'EOF'
+            ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST \<< 'EOF'
               cd /home/$EC2_USER/$APP_DIR
 
               # Install dependencies and build
