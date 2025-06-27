@@ -16,7 +16,16 @@ jobs:
       - run:
           name: Copy project to EC2
           command: |
-            rsync -az -e "ssh -o StrictHostKeyChecking=no" ./ $EC2_USER@$EC2_HOST:/home/$EC2_USER/$APP_DIR
+             # Try to install rsync if missing
+        if ! command -v rsync > /dev/null; then
+          if command -v apt > /dev/null; then
+            sudo apt update && sudo apt install rsync -y
+          elif command -v yum > /dev/null; then
+            sudo yum install rsync -y
+          fi
+        fi 
+             rsync -az -e "ssh -o StrictHostKeyChecking=no" ./
+$EC2_USER@$EC2_HOST:/home/$EC2_USER/$APP_DIR
 
       - run:
           name: Build and serve React app on EC2
