@@ -29,17 +29,17 @@ jobs:
               sudo apt install -y nodejs
 
               # Remove old folder and clone fresh
-              rm -rf online-shopping-app1
-              git clone https://github.com/Prasannaramesh13/online-shopping-app.git online-shopping-app1
+              sudo rm -rf online-shopping-app1
+              sudo git clone https://github.com/Prasannaramesh13/online-shopping-app.git online-shopping-app1
 
-              cd online-shopping-app1
+              sudo cd online-shopping-app1
 
               # Install dependencies and build
               npm install
               npm run build
 
               # Install serve globally
-              sudo npm install -g serve
+              npm install -g serve
 
               # Kill anything on port 3000
               fuser -k 3000/tcp || true
