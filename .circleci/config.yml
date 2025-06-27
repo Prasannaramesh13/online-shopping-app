@@ -2,7 +2,7 @@ version: 2.1
 
 jobs:
   deploy:
-    machine: true  # Use a full VM instead of Docker container
+    machine: true  # Use a full VM instead of Docker
     environment:
       REPO_URL: https://github.com/Prasannaramesh13/online-shopping-app.git
       APP_DIR: online-shopping-app
@@ -11,43 +11,41 @@ jobs:
 
       - add_ssh_keys:
           fingerprints:
-            - "SHA256:nvBo8bI+QsWnA9X51EFwxDMrbLDhVU1qtSZGf7Cd9aE"  # Replace with your actual SSH fingerprint
+            - "SHA256:nvBo8bI+QsWnA9X51EFwxDMrbLDhVU1qtSZGf7Cd9aE"  # Replace with your actual SSH key fingerprint
 
       - run:
           name: SSH into EC2 and deploy React app
           command: |
             ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST \<< 'EOF'
-              # Update system and install required tools
+              # Install required tools
               sudo apt update
               sudo apt install -y git curl psmisc
 
-              # Install Node.js 18
+              # Install Node.js (v18)
               curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
               sudo apt install -y nodejs
 
-              # Go to home directory
+              # Navigate to home and remove old app folder
               cd /home/$EC2_USER
-
-              # Remove existing app directory if it exists
               rm -rf $APP_DIR
 
-              # Clone the GitHub repo
-              git clone $REPO_URL $APP_DIR
+              # Clone the latest code
+              git clone $REPO_URL
               cd $APP_DIR
 
-              # Install npm dependencies and build the React app
+              # Install dependencies and build the app
               npm install
               npm run build
 
-              # Install serve globally if not installed
+              # Install serve if not present
               if ! command -v serve > /dev/null; then
                 sudo npm install -g serve
               fi
 
-              # Kill any existing app running on port 3000
+              # Kill existing app running on port 3000
               fuser -k 3000/tcp || true
 
-              # Serve the React app in the background on port 3000
+              # Serve the build directory on port 3000 (accessible via EC2_PUBLIC_IP:3000)
               nohup serve -s build -l tcp://0.0.0.0:3000 > /tmp/serve.log 2>&1 &
             EOF
 
@@ -56,6 +54,7 @@ workflows:
   deploy_workflow:
     jobs:
       - deploy
+
 
 
 
