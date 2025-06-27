@@ -2,8 +2,6 @@ version: 2.1
 
 jobs:
   deploy:
-    docker:
-      - image: cimg/node:18.17.0
     environment:
       REPO_URL: https://github.com/Prasannaramesh13/online-shopping-app.git
       APP_DIR: online-shopping-app
