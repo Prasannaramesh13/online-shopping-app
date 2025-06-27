@@ -47,4 +47,11 @@ jobs:
               fuser -k 3000/tcp || true
 
               # Start serve in background
-              nohup serve -s
+              nohup serve -s build -l 3000 > serve.log 2>&1 &
+            EOF
+
+workflows:
+  version: 2
+  deploy_workflow:
+    jobs:
+      - deploy
