@@ -14,26 +14,12 @@ jobs:
             - "SHA256:nvBo8bI+QsWnA9X51EFwxDMrbLDhVU1qtSZGf7Cd9aE"
 
       - run:
-          name: Ensure rsync is installed and copy project to EC2
-          command: |
-            ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << 'EOF'
-              if ! command -v rsync > /dev/null; then
-                if command -v apt > /dev/null; then
-                  sudo apt update && sudo apt install rsync -y
-                elif command -v yum > /dev/null; then
-                  sudo yum install rsync -y
-                fi
-              fi
-            EOF
-
-            rsync -az -e "ssh -o StrictHostKeyChecking=no" ./ $EC2_USER@$EC2_HOST:/home/$EC2_USER/$APP_DIR
-
-      - run:
           name: Build and serve React app on EC2
           command: |
             ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << 'EOF'
               cd /home/$EC2_USER/$APP_DIR
-
+              sudo apt update && sudo apt install git -y
+              git clone https://github.com/Prasannaramesh13/online-shopping-app.git
               # Install dependencies and build
               npm install
               npm run build
