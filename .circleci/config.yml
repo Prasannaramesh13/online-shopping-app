@@ -30,7 +30,7 @@ jobs:
 
               # Remove old folder and clone fresh
               rm -rf online-shopping-app1
-              git clone https://github.com/Prasannaramesh13/online-shopping-app.git
+              git clone https://github.com/Prasannaramesh13/online-shopping-app.git online-shopping-app1
 
               cd online-shopping-app1
 
