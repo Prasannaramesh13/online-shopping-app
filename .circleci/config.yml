@@ -22,17 +22,17 @@ jobs:
 
               # Install required tools
               sudo apt update
-              sudo apt install -y git curl psmisc
-
-              # Remove old folder and clone fresh
-              rm -rf $APP_DIR
-              git clone $REPO_URL
-
-              cd $APP_DIR
+              sudo apt install -y git curl
 
               # Install Node.js
               curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
               sudo apt install -y nodejs
+
+              # Remove old folder and clone fresh
+              rm -rf online-shopping-app
+              git clone https://github.com/Prasannaramesh13/online-shopping-app.git
+
+              cd online-shopping-app
 
               # Install dependencies and build
               npm install
