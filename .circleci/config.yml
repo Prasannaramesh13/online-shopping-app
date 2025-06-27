@@ -1,44 +1,51 @@
 version: 2.1
 
 jobs:
-  build_and_deploy:
+  deploy:
     docker:
       - image: cimg/node:18.17.0
     environment:
-      IMAGE_TAG: latest
-      IMAGE_NAME: prasanna1808/e-commerce
+      APP_DIR: react-app
     steps:
       - checkout
 
-      - setup_remote_docker
+      - add_ssh_keys:
+          fingerprints:
+            - "SHA256:nvBo8bI+QsWnA9X51EFwxDMrbLDhVU1qtSZGf7Cd9aE"
 
       - run:
-          name: Build Docker image
+          name: Copy project to EC2
           command: |
-            chmod +x build.sh
-            ./build.sh
+            rsync -az -e "ssh -o StrictHostKeyChecking=no" ./ $EC2_USER@$EC2_HOST:/home/$EC2_USER/$APP_DIR
 
       - run:
-          name: Save Docker image as tarball
-          command: |
-            mkdir -p $(dirname ${IMAGE_NAME}.tar)          
-            docker save -o ${IMAGE_NAME}.tar ${IMAGE_NAME}:${IMAGE_TAG}
-
-      - run:
-          name: Copy image to EC2 instance
-          command: |
-            scp -o StrictHostKeyChecking=no ${IMAGE_NAME}.tar $EC2_USER@$EC2_HOST:/home/$EC2_USER/
-
-      - run:
-          name: Load image and run container on EC2
+          name: Build and serve React app on EC2
           command: |
             ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST \<< EOF
-              docker load -i /home/$EC2_USER/${IMAGE_NAME}.tar
-              docker stop shoppingapp || true
-              docker rm -f shoppingapp || true
-              docker network create react-net || true
-              docker run -d --name shoppingapp --network react-net -p 3000:3000 ${IMAGE_NAME}:${IMAGE_TAG}
+              cd /home/$EC2_USER/$APP_DIR
+
+              # Install dependencies and build
+              npm install
+              npm run build
+
+              # Install serve globally if not already installed
+              if ! command -v serve > /dev/null; then
+                npm install -g serve
+              fi
+
+              # Kill old process running on port 3000
+              fuser -k 3000/tcp || true
+
+              # Start serve in background
+              nohup serve -s build -l 3000 > serve.log 2>&1 &
             EOF
+
+workflows:
+  version: 2
+  deploy_workflow:
+    jobs:
+      - deploy
+
 
 workflows:
   version: 2
