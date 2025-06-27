@@ -45,10 +45,3 @@ workflows:
   deploy_workflow:
     jobs:
       - deploy
-
-
-workflows:
-  version: 2
-  deploy_workflow:
-    jobs:
-      - build_and_deploy
