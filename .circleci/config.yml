@@ -14,23 +14,24 @@ jobs:
             - "SHA256:nvBo8bI+QsWnA9X51EFwxDMrbLDhVU1qtSZGf7Cd9aE"
 
       - run:
-          name: Copy project to EC2
+          name: Ensure rsync is installed and copy project to EC2
           command: |
-             # Try to install rsync if missing
-        if ! command -v rsync > /dev/null; then
-          if command -v apt > /dev/null; then
-            sudo apt update && sudo apt install rsync -y
-          elif command -v yum > /dev/null; then
-            sudo yum install rsync -y
-          fi
-        fi 
-             rsync -az -e "ssh -o StrictHostKeyChecking=no" ./
-$EC2_USER@$EC2_HOST:/home/$EC2_USER/$APP_DIR
+            ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << 'EOF'
+              if ! command -v rsync > /dev/null; then
+                if command -v apt > /dev/null; then
+                  sudo apt update && sudo apt install rsync -y
+                elif command -v yum > /dev/null; then
+                  sudo yum install rsync -y
+                fi
+              fi
+            EOF
+
+            rsync -az -e "ssh -o StrictHostKeyChecking=no" ./ $EC2_USER@$EC2_HOST:/home/$EC2_USER/$APP_DIR
 
       - run:
           name: Build and serve React app on EC2
           command: |
-            ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST \<< EOF
+            ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << 'EOF'
               cd /home/$EC2_USER/$APP_DIR
 
               # Install dependencies and build
@@ -46,11 +47,4 @@ $EC2_USER@$EC2_HOST:/home/$EC2_USER/$APP_DIR
               fuser -k 3000/tcp || true
 
               # Start serve in background
-              nohup serve -s build -l 3000 > serve.log 2>&1 &
-            EOF
-
-workflows:
-  version: 2
-  deploy_workflow:
-    jobs:
-      - deploy
+              nohup serve -s
