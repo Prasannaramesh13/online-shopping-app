@@ -16,9 +16,13 @@ jobs:
           name: SSH into EC2 and deploy React app
           command: |
             ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST \<< 'EOF'
-              # Variables inside the EC2 instance
-              APP_DIR=online-shopping-app
+              # Set up variables
               REPO_URL=https://github.com/Prasannaramesh13/online-shopping-app.git
+              APP_DIR=online-shopping-app
+              USER_HOME=/home/$USER
+
+              # Change to user's home directory
+              cd $USER_HOME
 
               # Install required tools
               sudo apt update
@@ -28,11 +32,10 @@ jobs:
               curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
               sudo apt install -y nodejs
 
-              # Navigate to home and remove old app folder
-              cd /home/$EC2_USER
+              # Remove old app if exists
               rm -rf $APP_DIR
 
-              # Clone repo
+              # Clone the app (into your own home dir)
               git clone $REPO_URL
               cd $APP_DIR
 
@@ -40,15 +43,15 @@ jobs:
               npm install
               npm run build
 
-              # Install serve if missing
+              # Install 'serve' globally if missing
               if ! command -v serve > /dev/null; then
                 sudo npm install -g serve
               fi
 
-              # Kill any existing app on port 3000
+              # Kill existing app if needed
               fuser -k 3000/tcp || true
 
-              # Serve build directory
+              # Serve the app
               nohup serve -s build -l tcp://0.0.0.0:3000 > /tmp/serve.log 2>&1 &
             EOF
 
@@ -57,9 +60,3 @@ workflows:
   deploy_workflow:
     jobs:
       - deploy
-
-
-
-
-
-
