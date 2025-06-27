@@ -1,8 +1,5 @@
 version: 2.1
-
-jobs:
-  deploy:
-    environment:
+environment:
       REPO_URL: https://github.com/Prasannaramesh13/online-shopping-app.git
       APP_DIR: online-shopping-app
     steps:
