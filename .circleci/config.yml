@@ -1,0 +1,46 @@
+version: 2.1
+
+jobs:
+  build_and_deploy:
+    docker:
+      - image: cimg/node:18.17.0
+    environment:
+      IMAGE_TAG: latest
+      IMAGE_NAME: react-app
+    steps:
+      - checkout
+
+      - setup_remote_docker
+
+      - run:
+          name: Build Docker image
+          command: |
+            chmod +x build.sh
+            ./build.sh
+
+      - run:
+          name: Save Docker image as tarball
+          command: |
+            docker save -o ${IMAGE_NAME}.tar ${IMAGE_NAME}:${IMAGE_TAG}
+
+      - run:
+          name: Copy image to EC2 instance
+          command: |
+            scp -o StrictHostKeyChecking=no ${IMAGE_NAME}.tar $EC2_USER@$EC2_HOST:/home/$EC2_USER/
+
+      - run:
+          name: Load image and run container on EC2
+          command: |
+            ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << EOF
+              docker load -i /home/$EC2_USER/${IMAGE_NAME}.tar
+              docker stop shoppingapp || true
+              docker rm -f shoppingapp || true
+              docker network create react-net || true
+              docker run -d --name shoppingapp --network react-net -p 3000:3000 ${IMAGE_NAME}:${IMAGE_TAG}
+            EOF
+
+workflows:
+  version: 2
+  deploy_workflow:
+    jobs:
+      - build_and_deploy
