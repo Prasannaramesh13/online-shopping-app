@@ -14,8 +14,7 @@ jobs:
       - run:
           name: SSH into EC2 and deploy React app
           command: |
-            ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST \<< 'EOF'
-              set -e
+              ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST \<< 'EOF'
               cd /home/$EC2_USER
 
               # Ensure ownership
