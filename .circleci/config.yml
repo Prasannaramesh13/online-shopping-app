@@ -5,7 +5,7 @@ jobs:
     docker:
       - image: cimg/node:18.17.0
     environment:
-      APP_DIR: react-app
+      APP_DIR: online-shopping-app
     steps:
       - checkout
 
@@ -14,13 +14,16 @@ jobs:
             - "SHA256:nvBo8bI+QsWnA9X51EFwxDMrbLDhVU1qtSZGf7Cd9aE"
 
       - run:
-          name: Build and serve React app on EC2
+          name: SSH into EC2 and deploy React app
           command: |
-            ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST \<< 'EOF'
+            ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << 'EOF'
+              # Setup
               sudo apt update
               sudo apt install -y git psmisc curl
 
               cd /home/$EC2_USER
+
+              # Clone or pull the repo
               if [ -d "$APP_DIR/.git" ]; then
                 cd $APP_DIR && git pull
               else
@@ -28,19 +31,25 @@ jobs:
                 cd $APP_DIR
               fi
 
+              # Install Node.js
               curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
               sudo apt install -y nodejs
 
+              # Install dependencies & build
+              cd /home/$USER/$APP_DIR
               npm install
               npm run build
 
+              # Install serve globally with sudo
               if ! command -v serve > /dev/null; then
-                npm install -g serve
+                sudo npm install -g serve
               fi
 
+              # Kill any process on port 3000
               fuser -k 3000/tcp || true
 
-              nohup serve -s build -l tcp://0.0.0.0:3000 > /home/$EC2_USER/serve.log 2>&1 &
+              # Serve build (output to /tmp to avoid permission issues)
+              nohup serve -s build -l tcp://0.0.0.0:3000 > /tmp/serve.log 2>&1 &
             EOF
 
 workflows:
@@ -48,4 +57,5 @@ workflows:
   deploy_workflow:
     jobs:
       - deploy
+
 
