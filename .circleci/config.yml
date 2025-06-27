@@ -31,7 +31,7 @@ jobs:
       - run:
           name: Load image and run container on EC2
           command: |
-            ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << EOF
+            ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST \<< EOF
               docker load -i /home/$EC2_USER/${IMAGE_NAME}.tar
               docker stop shoppingapp || true
               docker rm -f shoppingapp || true
