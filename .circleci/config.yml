@@ -6,7 +6,7 @@ jobs:
       - image: cimg/node:18.17.0
     environment:
       IMAGE_TAG: latest
-      IMAGE_NAME: react-app
+      IMAGE_NAME: prasanna1808/e-commerce
     steps:
       - checkout
 
