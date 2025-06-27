@@ -16,7 +16,7 @@ jobs:
       - run:
           name: SSH into EC2 and deploy React app
           command: |
-            ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << 'EOF'
+            ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST \<< 'EOF'
               # Setup
               sudo apt update
               sudo apt install -y git psmisc curl
