@@ -21,6 +21,7 @@ jobs:
       - run:
           name: Save Docker image as tarball
           command: |
+            mkdir -p $(dirname ${IMAGE_NAME}.tar)          
             docker save -o ${IMAGE_NAME}.tar ${IMAGE_NAME}:${IMAGE_TAG}
 
       - run:
