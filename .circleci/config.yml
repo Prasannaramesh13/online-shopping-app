@@ -21,18 +21,18 @@ jobs:
               sudo chown -R $EC2_USER:$EC2_USER .
 
               # Install required tools
-              sudo apt update
-              sudo apt install -y git curl
+              apt update
+              apt install -y git curl
 
               # Install Node.js
               curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-              sudo apt install -y nodejs
+              apt install -y nodejs
 
               # Remove old folder and clone fresh
-              sudo rm -rf online-shopping-app1
-              sudo git clone https://github.com/Prasannaramesh13/online-shopping-app.git online-shopping-app1
+              rm -rf online-shopping-app1
+              git clone https://github.com/Prasannaramesh13/online-shopping-app.git online-shopping-app1
 
-              sudo cd online-shopping-app1
+              cd online-shopping-app1
 
               # Install dependencies and build
               npm install
