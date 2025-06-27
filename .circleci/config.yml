@@ -29,10 +29,10 @@ jobs:
               sudo apt install -y nodejs
 
               # Remove old folder and clone fresh
-              rm -rf online-shopping-app
+              rm -rf online-shopping-app1
               git clone https://github.com/Prasannaramesh13/online-shopping-app.git
 
-              cd online-shopping-app
+              cd online-shopping-app1
 
               # Install dependencies and build
               npm install
