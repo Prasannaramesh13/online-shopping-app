@@ -16,10 +16,8 @@ jobs:
           fingerprints:
             - "SHA256:nvBo8bI+QsWnA9X51EFwxDMrbLDhVU1qtSZGf7Cd9aE"
 
-      - aws-cli/setup:
-          aws-access-key-id: AWS_ACCESS_KEY_ID
-          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
-          aws-region: us-east-1c
+      # Just call setup (it uses env vars already)
+      - aws-cli/setup
 
       - run:
           name: SSH into EC2 and deploy React app
