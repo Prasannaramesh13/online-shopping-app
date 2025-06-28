@@ -1,23 +1,31 @@
 version: 2.1
 
+orbs:
+  aws-cli: circleci/aws-cli@4.0.0
+
 jobs:
   deploy:
-    machine: true  # Use actual VM, not Docker image
+    machine: true  # Use full VM for SSH access
     environment:
       REPO_URL: https://github.com/Prasannaramesh13/online-shopping-app.git
-      APP_DIR: online-shopping-app
+      APP_DIR: react-app
     steps:
+      - checkout
+
       - add_ssh_keys:
           fingerprints:
             - "SHA256:nvBo8bI+QsWnA9X51EFwxDMrbLDhVU1qtSZGf7Cd9aE"
+
+      - aws-cli/setup:
+          aws-access-key-id: AWS_ACCESS_KEY_ID
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+          aws-region: us-east-1c
 
       - run:
           name: SSH into EC2 and deploy React app
           command: |
             ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST \<< 'EOF'
               cd /home/ubuntu
-
-              # Ensure ownership
               sudo chown -R $EC2_USER:$EC2_USER .
 
               # Install required tools
@@ -28,28 +36,22 @@ jobs:
               curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
               apt install -y nodejs
 
-              # Remove old folder and clone fresh
-              rm -rf online-shopping-app1
-              git clone https://github.com/Prasannaramesh13/online-shopping-app.git online-shopping-app1
-
-              cd online-shopping-app1
-
-              # Install dependencies and build
+              # Clone and build app
+              rm -rf $APP_DIR
+              git clone $REPO_URL $APP_DIR
+              cd $APP_DIR
               npm install
               npm run build
 
-              # Install serve globally
+              # Install serve and start app
               npm install -g serve
-
-              # Kill anything on port 3000
               fuser -k 3000/tcp || true
-
-              # Serve build folder
               nohup serve -s build -l tcp://0.0.0.0:3000 > /tmp/serve.log 2>&1 &
             EOF
 
 workflows:
   version: 2
-  deploy_workflow:
+  deploy-workflow:
     jobs:
       - deploy
+
