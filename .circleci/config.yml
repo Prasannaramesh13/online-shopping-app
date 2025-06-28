@@ -10,13 +10,11 @@ jobs:
           fingerprints:
             - "SHA256:your-ssh-fingerprint"
 
-      - run:
-          name: Make build.sh Executable
-          command: chmod +x deploy.sh
-
-      - run:
-          name: Run Deployment Script
-          command: ./deploy.sh
+      - run: 
+          name: Make and Run Deployment Script
+          command: |
+             chmod +x deploy.sh
+             ./deploy.sh
 
 workflows:
   version: 2
