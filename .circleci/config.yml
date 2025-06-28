@@ -1,55 +1,27 @@
 version: 2.1
 
-orbs:
-  aws-cli: circleci/aws-cli@4.0.0
-
 jobs:
   deploy:
-    machine: true  # Use full VM for SSH access
-    environment:
-      REPO_URL: https://github.com/Prasannaramesh13/online-shopping-app.git
-      APP_DIR: react-app
+    machine: true
     steps:
       - checkout
 
       - add_ssh_keys:
           fingerprints:
-            - "SHA256:nvBo8bI+QsWnA9X51EFwxDMrbLDhVU1qtSZGf7Cd9aE"
-
-      # Just call setup (it uses env vars already)
-      - aws-cli/setup
+            - "SHA256:your-ssh-fingerprint"
 
       - run:
-          name: SSH into EC2 and deploy React app
-          command: |
-            ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST \<< 'EOF'
-              cd /home/ubuntu
-              sudo chown -R $EC2_USER:$EC2_USER .
+          name: Make build.sh Executable
+          command: chmod +x deploy.sh
 
-              # Install required tools
-              apt update
-              apt install -y git curl
-
-              # Install Node.js
-              curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-              apt install -y nodejs
-
-              # Clone and build app
-              rm -rf react-app
-              git clone https://github.com/Prasannaramesh13/online-shopping-app.git react-app
-              cd react-app
-              npm install
-              npm run build
-
-              # Install serve and start app
-              npm install -g serve
-              fuser -k 3000/tcp || true
-              nohup serve -s build -l tcp://0.0.0.0:3000 > /tmp/serve.log 2>&1 &
-            EOF
+      - run:
+          name: Run Deployment Script
+          command: ./deploy.sh
 
 workflows:
   version: 2
   deploy-workflow:
     jobs:
       - deploy
+
 
