@@ -35,9 +35,9 @@ jobs:
               apt install -y nodejs
 
               # Clone and build app
-              rm -rf $APP_DIR
-              git clone $REPO_URL $APP_DIR
-              cd $APP_DIR
+              rm -rf react-app
+              git clone https://github.com/Prasannaramesh13/online-shopping-app.git react-app
+              cd react-app
               npm install
               npm run build
 
