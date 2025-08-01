@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'node:18-alpine'
+            args '-u root:root'
+        }
+    }
 
     environment {
         DEPLOY_BRANCH = 'main'
@@ -11,31 +16,27 @@ pipeline {
     stages {
         stage('Checkout & Build in Node Docker') {
             steps {
-                script {
-                    docker.image('node:20-bullseye-slim').inside('-u root:root') {
-                        sh '''
-                            # Clone source and install
-                            npm install --legacy-peer-deps
-                            npm run build
+                // Inject GitHub token from Jenkins Credentials
+                withCredentials([string(credentialsId: 'GITHUB_TOKEN', variable: 'GITHUB_TOKEN')]) {
+                    sh '''
+                        npm install --legacy-peer-deps
+                        npm run build
 
-                            # Prepare deploy dir
-                            rm -rf $DEPLOY_DIR
-                            mkdir -p $DEPLOY_DIR
-                            cp -r public/* $DEPLOY_DIR/
+                        rm -rf $DEPLOY_DIR
+                        mkdir -p $DEPLOY_DIR
+                        cp -r public/* $DEPLOY_DIR/
 
-                            # Push to GitHub
-                            cd $DEPLOY_DIR
-                            git init
-                            git config user.name "jenkins-bot"
-                            git config user.email "jenkins@example.com"
-                            git checkout -b $DEPLOY_BRANCH
+                        cd $DEPLOY_DIR
+                        git init
+                        git config user.name "jenkins-bot"
+                        git config user.email "jenkins@example.com"
+                        git checkout -b $DEPLOY_BRANCH
 
-                            git remote add origin https://$GITHUB_TOKEN@$GIT_URL
-                            git add .
-                            git commit -m "$COMMIT_MESSAGE" || echo "No changes to commit"
-                            git push -f origin $DEPLOY_BRANCH
-                        '''
-                    }
+                        git remote add origin https://$GITHUB_TOKEN@$GIT_URL
+                        git add .
+                        git commit -m "$COMMIT_MESSAGE" || echo "No changes to commit"
+                        git push -f origin $DEPLOY_BRANCH
+                    '''
                 }
             }
         }
