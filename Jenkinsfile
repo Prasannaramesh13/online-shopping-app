@@ -16,16 +16,21 @@ pipeline {
     stages {
         stage('Checkout & Build in Node Docker') {
             steps {
-                // Inject GitHub token from Jenkins Credentials
                 withCredentials([string(credentialsId: 'GITHUB_TOKEN', variable: 'GITHUB_TOKEN')]) {
                     sh '''
+                        # Install git inside Alpine-based container
+                        apk add --no-cache git
+
+                        # Install dependencies and build the React app
                         npm install --legacy-peer-deps
                         npm run build
 
+                        # Prepare deployment directory
                         rm -rf $DEPLOY_DIR
                         mkdir -p $DEPLOY_DIR
                         cp -r public/* $DEPLOY_DIR/
 
+                        # Git push build artifacts to target repo
                         cd $DEPLOY_DIR
                         git init
                         git config user.name "jenkins-bot"
@@ -34,7 +39,7 @@ pipeline {
 
                         git remote add origin https://$GITHUB_TOKEN@$GIT_URL
                         git add .
-                        git commit -m "$COMMIT_MESSAGE" || echo "No changes to commit"
+                        git commit -m "$COMMIT_MESSAGE" || echo 'Nothing to commit'
                         git push -f origin $DEPLOY_BRANCH
                     '''
                 }
@@ -44,10 +49,10 @@ pipeline {
 
     post {
         success {
-            echo "React app built and pushed to GitHub branch '$DEPLOY_BRANCH'."
+            echo "✅ React app built and pushed to GitHub branch '$DEPLOY_BRANCH'."
         }
         failure {
-            echo "Build or push to GitHub failed."
+            echo "❌ Build or push to GitHub failed."
         }
     }
 }
