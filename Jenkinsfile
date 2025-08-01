@@ -21,15 +21,7 @@ pipeline {
                     docker.image('node:20-bullseye-slim').inside('-u root:root') {
                         sh 'npm install --legacy-peer-deps'
                         sh 'npm run build'
-                    }
-                }
-            }
-        }
-
-        stage('Push Build to GitHub (via token)') {
-            steps {
-                withCredentials([string(credentialsId: 'build-github-access-token', variable: 'GITHUB_TOKEN')]) {
-                    sh '''
+                     sh """
                         rm -rf $DEPLOY_DIR
                         mkdir -p $DEPLOY_DIR
                         cp -r public/* $DEPLOY_DIR/
@@ -44,8 +36,9 @@ pipeline {
                         git add .
                         git commit -m "$COMMIT_MESSAGE"
                         git push -f origin $DEPLOY_BRANCH
-                    '''
-                }
+                    """
+                    }
+                }    
             }
         }
     }
