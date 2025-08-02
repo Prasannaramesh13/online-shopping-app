@@ -16,6 +16,7 @@ pipeline {
     stages {
         stage('Checkout & Build in Node Docker') {
             steps {
+                withCredentials([string(credentialsId: 'GITHUB_TOKEN', variable: 'GITHUB_TOKEN')]) {
                     sh '''
                         # Install git inside Alpine-based container
                         apk add --no-cache git
@@ -36,12 +37,13 @@ pipeline {
                         git config user.email "jenkins@example.com"
                         git checkout -b $DEPLOY_BRANCH
 
-                        git remote add origin https://@$GIT_URL
+                        git remote add origin https://$GITHUB_TOKEN@$GIT_URL
                         git add .
                         git commit -m "$COMMIT_MESSAGE" || echo 'Nothing to commit'
                         git push -f origin $DEPLOY_BRANCH
                     '''
-            }
+                }
+            }    
         }
     }
 
