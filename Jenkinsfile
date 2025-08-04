@@ -5,7 +5,7 @@ pipeline {
         IMAGE_TAG = 'latest'
         DEPLOY_DIR = '/media/justtry/external/mach001/projects/office_projects/justtry/build-artifact'
         COMMIT_MESSAGE = 'Auto: React build pushed by Jenkins'
-        RELEASE_REPO = 'github.com/Prasannaramesh13/deploy-justtrytech-release.git'
+        RELEASE_REPO = 'github.com/Prasannaramesh13/deploy-justtrytech.git'
     }
 
     stages {
