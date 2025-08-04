@@ -51,7 +51,7 @@ pipeline {
                                 git config user.name "jenkins-bot"
                                 git config user.email "jenkins@example.com"
                                 git checkout -b ${BRANCH_NAME}
-                                git remote add origin https://$RELEASE_REPO
+                                git remote add origin https://$GITHUB_TOKEN@$RELEASE_REPO
                                 git add .
                                 git commit -m "$COMMIT_MESSAGE" || echo 'Nothing to commit'
                                 git push -f origin ${BRANCH_NAME}
