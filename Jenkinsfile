@@ -34,6 +34,7 @@ pipeline {
                         echo "Using image: ${env.IMAGE_NAME}:${env.IMAGE_TAG}"
                         echo "Using build mode: ${env.BUILD_MODE}"
                     } else if (env.BRANCH_NAME == 'main') {
+                        withCredentials([string(credentialsId: 'GITHUB_TOKEN', variable: 'GITHUB_TOKEN')])
                         docker.image('node:18-alpine').inside('-u root:root') {
                             sh '''
                                 apk add --no-cache git
