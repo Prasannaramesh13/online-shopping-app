@@ -37,7 +37,7 @@ pipeline {
                     } else if (env.BRANCH_NAME == 'main') {
                         docker.image('node:20-bullseye-slim').inside('-u root:root') {
                             sh """
-                                apk add --no-cache git
+                                apt-get update && apt-get install -y git
 
                                 # Build React app
                                 npm install --legacy-peer-deps && npm run build
