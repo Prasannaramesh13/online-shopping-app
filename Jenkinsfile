@@ -5,7 +5,7 @@ pipeline {
         IMAGE_TAG = 'latest'
         DEPLOY_DIR = '/media/justtry/external/mach001/projects/office_projects/justtry/build-artifact'
         COMMIT_MESSAGE = 'Auto: React build pushed by Jenkins'
-        RELEASE_REPO = 'github.com/Prasannaramesh13/deploy-justtrytech.git'
+        RELEASE_REPO = 'github.com/justtrytechnologies/justtrytechnologies.github.io.git'
     }
 
     stages {
@@ -20,7 +20,7 @@ pipeline {
 
         stage('Branch Based Actions') {
             steps {
-                withCredentials([string(credentialsId: 'GITHUB_TOKEN', variable: 'GITHUB_TOKEN')]) {
+                withCredentials([string(credentialsId: 'justtry-site-token', variable: 'justtry-site-token')]) {
                 script {
                     if (env.BRANCH_NAME == 'local-dev') {
                         env.IMAGE_NAME = 'website/dev'
@@ -34,9 +34,9 @@ pipeline {
 
                         echo "Using image: ${env.IMAGE_NAME}:${env.IMAGE_TAG}"
                         echo "Using build mode: ${env.BUILD_MODE}"
-                    } else if (env.BRANCH_NAME == 'main') {
-                        docker.image('node:18-alpine').inside('-u root:root') {
-                            sh '''
+                    } else if (env.BRANCH_NAME == 'release') {
+                        docker.image('node:20-bullseye-slim').inside('-u root:root') {
+                            sh """
                                 apk add --no-cache git
 
                                 # Build React app
@@ -56,7 +56,7 @@ pipeline {
                                 git add .
                                 git commit -m "$COMMIT_MESSAGE" || echo 'Nothing to commit'
                                 git push -f origin ${BRANCH_NAME}
-                            '''
+                            """
                         }
                     } else {
                         error "Unsupported branch: ${env.BRANCH_NAME}"
