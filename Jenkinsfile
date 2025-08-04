@@ -1,58 +1,107 @@
 pipeline {
-    agent {
-        docker {
-            image 'node:18-alpine'
-            args '-u root:root'
-        }
-    }
+    agent any
 
     environment {
-        DEPLOY_BRANCH = 'main'
-        COMMIT_MESSAGE = 'Auto: React build pushed by Jenkins'
+        IMAGE_TAG = 'latest'
         DEPLOY_DIR = '/media/justtry/external/mach001/projects/office_projects/justtry/build-artifact'
-        GIT_URL = 'github.com/Prasannaramesh13/deploy-justtrytech.git'
+        COMMIT_MESSAGE = 'Auto: React build pushed by Jenkins'
+        RELEASE_REPO = 'github.com/Prasannaramesh13/deploy-justtrytech-release.git'
     }
 
     stages {
-        stage('Checkout & Build in Node Docker') {
+        stage('Checkout') {
             steps {
-                withCredentials([string(credentialsId: 'GITHUB_TOKEN', variable: 'GITHUB_TOKEN')]) {
-                    sh '''
-                        # Install git inside Alpine-based container
-                        apk add --no-cache git
-
-                        # Install dependencies and build the React app
-                        npm install --legacy-peer-deps
-                        npm run build
-
-                        # Prepare deployment directory
-                        rm -rf $DEPLOY_DIR
-                        mkdir -p $DEPLOY_DIR
-                        cp -r public/* $DEPLOY_DIR/
-
-                        # Git push build artifacts to target repo
-                        cd $DEPLOY_DIR
-                        git init
-                        git config user.name "jenkins-bot"
-                        git config user.email "jenkins@example.com"
-                        git checkout -b $DEPLOY_BRANCH
-
-                        git remote add origin https://$GITHUB_TOKEN@$GIT_URL
-                        git add .
-                        git commit -m "$COMMIT_MESSAGE" || echo 'Nothing to commit'
-                        git push -f origin $DEPLOY_BRANCH
-                    '''
+                checkout scm
+                script {
+                    echo "Current branch: ${env.BRANCH_NAME}"
                 }
-            }    
+            }
+        }
+
+        stage('Branch Based Actions') {
+            steps {
+                script {
+                    if (env.BRANCH_NAME == 'local-dev') {
+                        env.IMAGE_NAME = 'website/dev'
+                        env.BUILD_MODE = 'dev'
+
+                        echo "Using image: ${env.IMAGE_NAME}:${env.IMAGE_TAG}"
+                        echo "Using build mode: ${env.BUILD_MODE}"
+                    } else if (env.BRANCH_NAME == 'local-prod') {
+                        env.IMAGE_NAME = 'website/prod'
+                        env.BUILD_MODE = 'prod'
+
+                        echo "Using image: ${env.IMAGE_NAME}:${env.IMAGE_TAG}"
+                        echo "Using build mode: ${env.BUILD_MODE}"
+                    } else if (env.BRANCH_NAME.startsWith('release/')) {
+                        docker.image('node:18-alpine').inside('-u root:root') {
+                            sh '''
+                                apk add --no-cache git
+
+                                # Build React app
+                                npm install --legacy-peer-deps && npm run build
+
+                                # Prepare deployment
+                                rm -rf $DEPLOY_DIR
+                                mkdir -p $DEPLOY_DIR
+                                cp -r public/* $DEPLOY_DIR/
+
+                                cd $DEPLOY_DIR
+                                git init
+                                git config user.name "jenkins-bot"
+                                git config user.email "jenkins@example.com"
+                                git checkout -b ${BRANCH_NAME}
+                                git remote add origin https://$RELEASE_REPO
+                                git add .
+                                git commit -m "$COMMIT_MESSAGE" || echo 'Nothing to commit'
+                                git push -f origin ${BRANCH_NAME}
+                            '''
+                        }
+                    } else {
+                        error "Unsupported branch: ${env.BRANCH_NAME}"
+                    }
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            when {
+                anyOf {
+                    branch 'local-dev'
+                    branch 'local-prod'
+                }
+            }
+            steps {
+                script {
+                    sh """
+                        docker build \
+                          --build-arg BUILD_MODE=${BUILD_MODE} \
+                          -t ${IMAGE_NAME}:${IMAGE_TAG} .
+                    """
+                }
+            }
+        }
+
+        stage('Run Container') {
+            when {
+                anyOf {
+                    branch 'local-dev'
+                    branch 'local-prod'
+                }
+            }
+            steps {
+                script {
+                    sh 'chmod +x deploy.sh'
+                    sh "./deploy.sh ${env.BRANCH_NAME}"
+                }
+            }
         }
     }
 
     post {
-        success {
-            echo "React app built and pushed to GitHub branch '$DEPLOY_BRANCH'."
-        }
-        failure {
-            echo "Build or push to GitHub failed."
+        always {
+            echo 'CI/CD pipeline finished.'
         }
     }
 }
+
