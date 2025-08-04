@@ -20,7 +20,7 @@ pipeline {
 
         stage('Branch Based Actions') {
             steps {
-                withCredentials([string(credentialsId: 'GITHUB_TOKEN', variable: 'GITHUB_TOKEN')]) 
+                withCredentials([string(credentialsId: 'GITHUB_TOKEN', variable: 'GITHUB_TOKEN')]) {
                 script {
                     if (env.BRANCH_NAME == 'local-dev') {
                         env.IMAGE_NAME = 'website/dev'
@@ -60,10 +60,11 @@ pipeline {
                         }
                     } else {
                         error "Unsupported branch: ${env.BRANCH_NAME}"
+                        }
                     }
                 }
             }
-        }
+        }    
 
         stage('Build Docker Image') {
             when {
