@@ -1,5 +1,5 @@
 services:
-  online:
+  react-app:
     image: onlineshopping:latest
     build: .
     container_name: test
@@ -8,6 +8,26 @@ services:
     restart: unless-stopped
     networks:
       - test
+
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      # Certbot validation verification path loop mount
+      - certbot-challenge:/var/www/certbot:ro
+    restart: unless-stopped
+    depends_on:
+      - react-app # Ensures React app boots up first before Nginx proxy tries to resolve it
+    networks:
+      - test
+
+volumes:
+  certbot-challenge:
 networks:
   test:
-    external: true
+    driver: bridge
