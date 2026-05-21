@@ -2,7 +2,7 @@ services:
   react-app:
     image: onlineshopping:latest
     build: .
-    container_name: test
+    container_name: online-ui
     ports:
       - "3000:3000"
     restart: unless-stopped
