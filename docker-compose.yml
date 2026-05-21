@@ -1,0 +1,13 @@
+services:
+  online:
+    image: onlineshopping:latest
+    build: .
+    container_name: test
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    networks:
+      - test
+networks:
+  test:
+    external: true
