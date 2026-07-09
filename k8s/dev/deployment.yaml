@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ecommerce-app
+  name: hmis-mf
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: ecommerce-app
+      app: hmis-mf
   template:
     metadata:
       labels:
-        app: ecommerce-app
+        app: hmis-mf
     spec:
       containers:
-      - name: ecommerce-app
-        image: onlineshopping:latest
+      - name: hmis-mf
+        image: hmis-mf-nginx:latest
         imagePullPolicy: Never
         ports:
-        - containerPort: 3000
+        - containerPort: 80
 
         resources:
           requests:

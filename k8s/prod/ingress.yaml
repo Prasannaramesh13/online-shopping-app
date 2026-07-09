@@ -1,17 +1,17 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: ecommerce-ingress
+  name: hmis-mf-ingress
 spec:
   ingressClassName: nginx
   rules:
-  - host: shopping.justtrytech.com
+  - host: test.justtrytech.com
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: ecommerce-service
+            name: hmis-mf-service
             port:
               number: 80
