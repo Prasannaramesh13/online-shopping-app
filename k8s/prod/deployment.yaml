@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: ecommerce-app
-        image: onlineshopping:latest
+        image: hmis-mf-nginx:latest
         imagePullPolicy: Never
         ports:
         - containerPort: 3000
