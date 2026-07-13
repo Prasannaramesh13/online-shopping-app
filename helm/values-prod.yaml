@@ -1,0 +1,19 @@
+namespace: test-prod
+
+replicaCount: 1
+
+image:
+  repository: onlineshopping
+  tag: latest
+  pullPolicy: IfNotPresent
+
+containerPort: 3000
+
+service:
+  type: ClusterIP
+  port: 3000
+
+ingress:
+  enabled: true
+  className: nginx
+  host: shopping.justtrytech.com
